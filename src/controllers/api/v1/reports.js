@@ -614,6 +614,116 @@ apiReports.generate.ticketsByAssignee = function (req, res) {
   )
 }
 
+apiReports.generate.ticketsByResponseTime = function (req, res) {
+  const postData = req.body
+  if (!postData || !postData.startDate || !postData.endDate)
+    return res.status(400).json({ success: false, error: 'Invalid Post Data' })
+
+  async.waterfall(
+    [
+      function (done) {
+        if (_.includes(postData.groups, 'all')) {
+          if (req.user.role.isAdmin || req.user.role.isAgent) {
+            groupSchema.getAllGroupsNoPopulate(function (err, grps) {
+              if (err) return done(err)
+
+              return done(null, grps)
+            })
+          } else {
+            groupSchema.getAllGroupsOfUser(req.user._id, function (err, grps) {
+              if (err) return done(err)
+
+              return done(null, grps)
+            })
+          }
+        } else {
+          return done(null, postData.groups)
+        }
+      },
+      function (grps, done) {
+        ticketSchema.getTicketsWithObject(
+          grps,
+          {
+            limit: -1,
+            page: 0,
+            filter: {
+              date: {
+                start: postData.startDate,
+                end: postData.endDate
+              }
+            }
+          },
+          function (err, tickets) {
+            if (err) return done(err)
+
+            var input = processResponseTimeData(tickets)
+
+            tickets = null
+
+            return done(null, input)
+          }
+        )
+      }
+    ],
+    function (err, input) {
+      if (err) return res.status(400).json({ success: false, error: err })
+
+      var headers = {
+        ticket_id: 'ticket_id',
+        subject: 'subject',
+        raised_by: 'raised_by',
+        assigned_to: 'assigned_to',
+        opened_at: 'opened_at',
+        first_reply_at: 'first_reply_at',
+        response_hours: 'response_hours'
+      }
+
+      csv.stringify(input, { header: true, columns: headers }, function (err, output) {
+        if (err) return res.status(400).json({ success: false, error: err })
+
+        res.setHeader('Content-disposition', 'attachment; filename=report_output.csv')
+        res.set('Content-Type', 'text/csv')
+        res.send(output)
+      })
+    }
+  )
+}
+
+function processResponseTimeData (tickets) {
+  var input = []
+
+  for (var i = 0; i < tickets.length; i++) {
+    var ticket = tickets[i]
+
+    var comments = _.filter(ticket.comments, function (c) {
+      return !c.deleted
+    })
+
+    if (comments.length === 0) continue
+
+    var firstReply = _.sortBy(comments, 'date')[0]
+    var responseMs = new Date(firstReply.date).getTime() - new Date(ticket.date).getTime()
+    var responseHours = Math.round((responseMs / 3600000) * 100) / 100
+
+    var t = []
+    t.push(ticket.uid)
+    t.push(ticket.subject || '')
+    t.push(ticket.owner ? ticket.owner.fullname : '')
+    t.push(ticket.assignee ? ticket.assignee.fullname : '')
+    t.push(ticket.date ? moment(ticket.date).format('MMM DD, YY HH:mm:ss') : '')
+    t.push(firstReply.date ? moment(firstReply.date).format('MMM DD, YY HH:mm:ss') : '')
+    t.push(responseHours)
+
+    input.push(t)
+  }
+
+  input.sort(function (a, b) {
+    return b[6] - a[6]
+  })
+
+  return input
+}
+
 function processReportData (tickets) {
   const input = []
   for (let i = 0; i < tickets.length; i++) {

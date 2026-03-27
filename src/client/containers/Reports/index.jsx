@@ -15,6 +15,7 @@ import ReportTicketsByStatus from 'containers/Reports/subreports/ticketsByStatus
 import ReportTicketsByTags from 'containers/Reports/subreports/ticketsByTags'
 import ReportTicketsByTypes from 'containers/Reports/subreports/ticketsByTypes'
 import ReportTicketsByAssignee from 'containers/Reports/subreports/ticketsByAssignee'
+import ReportTicketsByResponseTime from 'containers/Reports/subreports/ticketsByResponseTime'
 
 import helpers from 'lib/helpers'
 
@@ -111,6 +112,15 @@ class ReportsContainer extends React.Component {
                           Tickets by Assignee
                         </a>
                       </li>
+                      <li>
+                        <a
+                          href='#'
+                          className={'no-ajaxy'}
+                          onClick={e => this.onSelectReportClicked(e, 'tickets_by_response_time')}
+                        >
+                          Tickets by Response Time
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -131,6 +141,7 @@ class ReportsContainer extends React.Component {
                 {this.selectedReport === 'tickets_by_tags' && <ReportTicketsByTags />}
                 {this.selectedReport === 'tickets_by_types' && <ReportTicketsByTypes />}
                 {this.selectedReport === 'tickets_by_assignee' && <ReportTicketsByAssignee />}
+                {this.selectedReport === 'tickets_by_response_time' && <ReportTicketsByResponseTime />}
               </div>
             </div>
           </GridItem>
