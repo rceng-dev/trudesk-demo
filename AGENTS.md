@@ -63,6 +63,58 @@ Tests use **Mocha + Chai (`expect` style) + Supertest**. The `0_database.js` fil
 
 ---
 
+## Local Development Setup
+
+MongoDB runs in Docker; the app runs locally for fast iteration.
+
+### Prerequisites
+- Node.js (v16 recommended; v24 works with the SASS workaround below)
+- Docker (for MongoDB)
+
+### Start MongoDB
+```bash
+docker compose up -d mongo       # Start only MongoDB on localhost:27017
+```
+
+### Install Dependencies & Build Frontend
+```bash
+npx yarn install                 # Install all dependencies
+npx yarn webpackdev              # Build frontend JS bundle (development)
+```
+
+### Start the App
+
+**Windows (CMD):**
+```cmd
+set TD_MONGODB_SERVER=localhost&& set TD_MONGODB_DATABASE=trudesk&& node app.js
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:TD_MONGODB_SERVER="localhost"; $env:TD_MONGODB_DATABASE="trudesk"; node app.js
+```
+
+**Linux / macOS / Git Bash:**
+```bash
+TD_MONGODB_SERVER=localhost TD_MONGODB_DATABASE=trudesk node app.js
+```
+
+The app will be available at `http://localhost:8118`.
+
+### After Code Changes
+- **Server-side changes**: restart the node process
+- **Client-side changes**: run `npx yarn webpackdev` to rebuild, then hard-refresh the browser (`Ctrl+Shift+R`)
+
+### Node.js Compatibility Note
+`node-sass` (used for dynamic theme CSS) does not support Node v18+. On newer Node versions the SASS build step is wrapped in a try/catch and skips gracefully. To get the compiled CSS, either:
+- Copy `public/css/app.min.css` from the Docker container: `docker cp trudesk-trudesk-1:/usr/src/trudesk/public/css/app.min.css public/css/app.min.css`
+- Or use Node v16 where `node-sass` works natively
+
+### Docker-only Mode (alternative)
+If you prefer running everything in Docker, the `docker-compose.yml` uses the pre-built `polonel/trudesk:1` image. Note that local source changes are **not** reflected in the container unless you manually `docker cp` files in and rebuild/restart.
+
+---
+
 ## Code Style Guidelines
 
 ### General
