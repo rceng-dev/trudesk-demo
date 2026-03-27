@@ -1544,14 +1544,16 @@ define([
 
   helpers.formatDate = function (date, format, isUTC) {
     const timezone = this.getTimezone()
+    const parsedDate = moment(date, [moment.ISO_8601, helpers.getShortDateFormat(), helpers.getLongDateFormat()], true)
+    const dateToUse = parsedDate.isValid() ? parsedDate : moment(date)
 
     if (isUTC)
-      return moment(date)
+      return dateToUse
         .utc(true)
         .tz(timezone)
         .format(format)
 
-    return moment(date)
+    return dateToUse
       .tz(timezone)
       .format(format)
   }

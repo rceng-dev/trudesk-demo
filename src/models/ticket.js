@@ -189,15 +189,9 @@ ticketSchema.post('save', async function (doc, next) {
   }
 })
 
-ticketSchema.virtual('statusFormatted').get(function (callback) {
-  const s = this.status
-  const ticketStatus = require('./ticketStatus')
-
-  ticketStatus.findOne({ uid: s }, function (err, status) {
-    if (err) return callback(err)
-    if (!status) return callback('Invalid Status Id: ' + typeId)
-    if (typeof callback === 'function') return callback(null, status.get('name'))
-  })
+ticketSchema.virtual('statusFormatted').get(function () {
+  if (this.status && this.status.name) return this.status.name
+  return this.status || ''
 })
 
 ticketSchema.virtual('commentsAndNotes').get(function () {

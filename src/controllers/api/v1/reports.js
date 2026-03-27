@@ -621,25 +621,23 @@ function processReportData (tickets) {
 
     const t = []
     t.push(ticket.uid)
-    t.push(ticket.type.name)
-    t.push(ticket.priority.name)
-    t.push(ticket.statusFormatted)
-    t.push(moment(ticket.date).format('MMM DD, YY HH:mm:ss'))
-    t.push(ticket.subject)
-    t.push(ticket.owner.fullname)
-    t.push(ticket.group.name)
-    if (ticket.assignee) {
-      t.push(ticket.assignee.fullname)
-    } else {
-      t.push('')
-    }
+    t.push(ticket.type ? ticket.type.name : '')
+    t.push(ticket.priority ? ticket.priority.name : '')
+    t.push(ticket.statusFormatted || '')
+    t.push(ticket.date ? moment(ticket.date).format('MMM DD, YY HH:mm:ss') : '')
+    t.push(ticket.subject || '')
+    t.push(ticket.owner ? ticket.owner.fullname : '')
+    t.push(ticket.group ? ticket.group.name : '')
+    t.push(ticket.assignee ? ticket.assignee.fullname : '')
 
     let tags = ''
-    for (let k = 0; k < ticket.tags.length; k++) {
-      if (k === ticket.tags.length - 1) {
-        tags += ticket.tags[k].name
-      } else {
-        tags += ticket.tags[k].name + ';'
+    if (ticket.tags && ticket.tags.length > 0) {
+      for (let k = 0; k < ticket.tags.length; k++) {
+        if (k === ticket.tags.length - 1) {
+          tags += ticket.tags[k].name
+        } else {
+          tags += ticket.tags[k].name + ';'
+        }
       }
     }
 

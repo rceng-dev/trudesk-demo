@@ -191,8 +191,13 @@ function launchServer (db) {
           require('./src/migration').run(next)
         },
         function (next) {
-          winston.debug('Building dynamic sass...')
-          require('./src/sass/buildsass').build(next)
+          try {
+            winston.debug('Building dynamic sass...')
+            require('./src/sass/buildsass').build(next)
+          } catch (e) {
+            winston.warn('Sass build skipped (node-sass not compatible): ' + e.message)
+            return next()
+          }
         },
         // function (next) {
         //   // Start Task Runners

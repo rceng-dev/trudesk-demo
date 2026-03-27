@@ -178,10 +178,14 @@ apiSettings.updateTemplateSubject = function (req, res) {
 }
 
 apiSettings.buildsass = function (req, res) {
-  var buildsass = require('../../../sass/buildsass')
-  buildsass.build(function (err) {
-    return defaultApiResponse(err, res)
-  })
+  try {
+    var buildsass = require('../../../sass/buildsass')
+    buildsass.build(function (err) {
+      return defaultApiResponse(err, res)
+    })
+  } catch (e) {
+    return res.status(500).json({ success: false, error: 'Sass build not supported in this environment' })
+  }
 }
 
 apiSettings.updateRoleOrder = function (req, res) {

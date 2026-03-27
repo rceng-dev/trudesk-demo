@@ -28,7 +28,11 @@ viewController.getData = function (request, cb) {
     [
       function (callback) {
         if (global.env === 'development') {
-          require('../../sass/buildsass').build(callback)
+          try {
+            require('../../sass/buildsass').build(callback)
+          } catch (e) {
+            return callback()
+          }
         } else {
           return callback()
         }

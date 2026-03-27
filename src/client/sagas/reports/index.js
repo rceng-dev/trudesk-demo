@@ -35,8 +35,8 @@ function * generateReport ({ payload, meta }) {
     yield put({ type: GENERATE_REPORT.SUCCESS, response, meta })
     downloadReport(response, payload.filename)
   } catch (error) {
-    const errorText = error.response ? error.response.data.error : error
-    if (error.response && error.response.status !== (401 || 403)) {
+    const errorText = error.response && error.response.data ? error.response.data.error : error.message || error
+    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
       Log.error(errorText, error)
       console.log(errorText)
       helpers.UI.showSnackbar(`Error: ${errorText}`, true)

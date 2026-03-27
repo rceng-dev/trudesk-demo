@@ -114,12 +114,22 @@ let port = nconf.get('port') || 8118
 
     require('socket.io')(server)
 
-    require('./sass/buildsass').buildDefault(err => {
-      if (err) {
-        winston.error(err)
-        return callback(err)
-      }
+    try {
+      require('./sass/buildsass').buildDefault(err => {
+        if (err) {
+          winston.warn('Sass build failed, skipping: ' + err.message)
+        }
 
+        if (!server.listening) {
+          server.listen(port, '0.0.0.0', () => {
+            return callback()
+          })
+        } else {
+          return callback()
+        }
+      })
+    } catch (e) {
+      winston.warn('Sass build skipped (node-sass not compatible): ' + e.message)
       if (!server.listening) {
         server.listen(port, '0.0.0.0', () => {
           return callback()
@@ -127,6 +137,6 @@ let port = nconf.get('port') || 8118
       } else {
         return callback()
       }
-    })
+    }
   }
 })(WebServer)
